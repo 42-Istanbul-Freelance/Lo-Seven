@@ -1,11 +1,13 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
 export function Header() {
     const { data: session, status } = useSession();
+    const pathname = usePathname();
 
     return (
         <header className="border-b border-zinc-200 bg-white sticky top-0 z-50">
@@ -25,14 +27,23 @@ export function Header() {
                 {/* Center Navigation Links (Only authenticated users) */}
                 {status === "authenticated" && session?.user?.role !== "HQ" && session?.user?.role !== "PRINCIPAL" && (
                     <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-                        <Link href="/dashboard" className="text-sm font-bold text-zinc-900 border-b-2 border-zinc-900 pb-1 translate-y-0.5">
-                            Dashboard
+                        <Link
+                            href="/dashboard"
+                            className={`text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'font-bold text-zinc-900 border-b-2 border-zinc-900 pb-1 translate-y-0.5' : 'text-zinc-500 hover:text-zinc-900'}`}
+                        >
+                            Ana Sayfa
                         </Link>
-                        <Link href="/explore" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-                            Explore
+                        <Link
+                            href="/explore"
+                            className={`text-sm font-medium transition-colors ${pathname === '/explore' ? 'font-bold text-zinc-900 border-b-2 border-zinc-900 pb-1 translate-y-0.5' : 'text-zinc-500 hover:text-zinc-900'}`}
+                        >
+                            Keşfet
                         </Link>
-                        <Link href="/community" className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-                            Community
+                        <Link
+                            href="/community"
+                            className={`text-sm font-medium transition-colors ${pathname === '/community' ? 'font-bold text-zinc-900 border-b-2 border-zinc-900 pb-1 translate-y-0.5' : 'text-zinc-500 hover:text-zinc-900'}`}
+                        >
+                            Topluluk
                         </Link>
                     </nav>
                 )}

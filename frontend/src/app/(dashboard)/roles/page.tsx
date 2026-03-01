@@ -118,11 +118,11 @@ export default function RolesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${u.role === 'HQ' ? 'bg-purple-100 text-purple-800' :
-                                                u.role === 'PRINCIPAL' ? 'bg-blue-100 text-blue-800' :
-                                                    u.role === 'TEACHER' ? 'bg-teal-100 text-teal-800' :
-                                                        'bg-zinc-100 text-zinc-800'
+                                            u.role === 'PRINCIPAL' ? 'bg-blue-100 text-blue-800' :
+                                                u.role === 'TEACHER' ? 'bg-teal-100 text-teal-800' :
+                                                    'bg-zinc-100 text-zinc-800'
                                             }`}>
-                                            {u.role}
+                                            {u.role === 'STUDENT' ? 'Öğrenci (STUDENT)' : u.role === 'TEACHER' ? 'Öğretmen (TEACHER)' : u.role === 'PRINCIPAL' ? 'Okul Müdürü (PRINCIPAL)' : 'Merkez Yönetici (HQ)'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">

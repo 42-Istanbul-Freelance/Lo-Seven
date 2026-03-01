@@ -83,12 +83,12 @@ export default function GamifiedDashboardPage() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8 px-4">
-                    <p className="text-sm font-semibold text-zinc-500">Gamified Dashboard</p>
+                    <p className="text-sm font-semibold text-zinc-500">Oyunlaştırılmış Pano</p>
                     <Link href="/settings" className="flex flex-col items-center gap-1 group">
                         <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-50 transition-colors">
                             <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Settings</span>
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Ayarlar</span>
                     </Link>
                 </div>
 
@@ -104,7 +104,7 @@ export default function GamifiedDashboardPage() {
                             <span className="font-bold text-zinc-900 tracking-tight">PearlConnect</span>
                         </Link>
                         <Link href="/profile" className="bg-red-500 text-white font-bold text-xs uppercase tracking-wide px-4 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-sm">
-                            Profile
+                            Profil
                         </Link>
                     </div>
 
@@ -149,7 +149,7 @@ export default function GamifiedDashboardPage() {
                         </div>
 
                         <h2 className="text-xl font-medium text-zinc-800 mb-2 tracking-wide">
-                            Hours Volunteered: <span className="font-bold text-zinc-900">{totalHours}</span>
+                            Gönüllü Saati: <span className="font-bold text-zinc-900">{totalHours}</span>
                         </h2>
 
                         {/* XP Progress Bar */}
@@ -177,17 +177,17 @@ export default function GamifiedDashboardPage() {
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{badge.name}</span>
                                 </div>
                             )) : (
-                                <p className="text-sm text-zinc-400">No badges earned yet. Keep volunteering!</p>
+                                <p className="text-sm text-zinc-400">Henüz rozet kazanılmamış. Gönüllü olmaya devam et!</p>
                             )}
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3 w-full max-w-[220px]">
                             <Link href="/dashboard/activities/new" className="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-3.5 rounded-xl transition-colors shadow-sm text-center">
-                                Set New Goals
+                                Yeni Hedef Ekle
                             </Link>
                             <Link href="/explore" className="w-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 font-bold text-sm py-3.5 rounded-xl transition-colors text-center">
-                                Access Challenges
+                                Görevleri Keşfet
                             </Link>
                         </div>
                     </div>

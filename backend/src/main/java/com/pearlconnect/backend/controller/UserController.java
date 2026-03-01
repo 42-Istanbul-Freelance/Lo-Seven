@@ -49,6 +49,34 @@ public class UserController {
         }
     }
 
+    @PatchMapping("/me/profile-picture")
+    public ResponseEntity<?> updateProfilePicture(@RequestBody Map<String, String> payload,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.pearlconnect.backend.security.CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        String newUrl = payload.get("profilePictureUrl");
+        if (newUrl == null || newUrl.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "profilePictureUrl is required."));
+        }
+
+        try {
+            User user = userRepository.findById(userDetails.getId()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            user.setProfilePictureUrl(newUrl);
+            userRepository.save(user);
+
+            return ResponseEntity
+                    .ok(Map.of("message", "Profile picture updated successfully", "profilePictureUrl", newUrl));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     private UserResponse mapToDto(User user) {
         return UserResponse.builder()
                 .id(user.getId())
@@ -61,6 +89,7 @@ public class UserController {
                 .totalHours(user.getTotalHours())
                 .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
                 .createdAt(user.getCreatedAt())
+                .profilePictureUrl(user.getProfilePictureUrl())
                 .build();
     }
 }

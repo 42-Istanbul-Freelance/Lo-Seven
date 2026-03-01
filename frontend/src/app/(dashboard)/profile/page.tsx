@@ -117,7 +117,7 @@ export default function ProfilePage() {
                             <h1 className="text-2xl font-bold text-zinc-900">{user?.name || "User"}</h1>
                             <p className="text-sm text-zinc-400 mt-1">{user?.email}</p>
                             <div className="bg-red-50 text-red-600 font-bold text-xs px-4 py-1 rounded-full mt-3">
-                                Level {level}
+                                Seviye {level}
                             </div>
                         </div>
 
@@ -125,20 +125,20 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-3 gap-4 mb-10">
                             <div className="bg-zinc-50 rounded-2xl p-5 text-center">
                                 <p className="text-2xl font-bold text-zinc-900">{completedActivities}</p>
-                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Completed</p>
+                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Tamamlanan</p>
                             </div>
                             <div className="bg-zinc-50 rounded-2xl p-5 text-center">
                                 <p className="text-2xl font-bold text-zinc-900">{totalHours}</p>
-                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Hours</p>
+                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Saat</p>
                             </div>
                             <div className="bg-zinc-50 rounded-2xl p-5 text-center">
                                 <p className="text-2xl font-bold text-zinc-900">{pendingActivities}</p>
-                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Pending</p>
+                                <p className="text-[11px] text-zinc-500 font-semibold mt-1">Bekleyen</p>
                             </div>
                         </div>
 
                         {/* Badges */}
-                        <h3 className="text-lg font-bold text-zinc-900 mb-4">Badges</h3>
+                        <h3 className="text-lg font-bold text-zinc-900 mb-4">Rozetlerim</h3>
                         <div className="flex flex-wrap gap-4 mb-10">
                             {badges.length > 0 ? badges.map((badge, i) => (
                                 <div key={badge.id} className="flex flex-col items-center gap-2 cursor-pointer group" title={badge.description}>
@@ -152,19 +152,19 @@ export default function ProfilePage() {
                                     <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">{badge.name}</span>
                                 </div>
                             )) : (
-                                <p className="text-sm text-zinc-400">No badges yet—keep volunteering!</p>
+                                <p className="text-sm text-zinc-400">Henüz rozetin yok ama gönüllü oldukça kazanacaksın!</p>
                             )}
                         </div>
 
                         {/* Recent Activities */}
-                        <h3 className="text-lg font-bold text-zinc-900 mb-4">Recent Activities</h3>
+                        <h3 className="text-lg font-bold text-zinc-900 mb-4">Son Etkinlikler</h3>
                         <div className="space-y-3">
                             {activities.slice(0, 5).map((act) => (
                                 <div key={act.id} className="flex items-center gap-4 bg-zinc-50 rounded-xl px-5 py-4">
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${act.status === "APPROVED" ? "bg-green-400" : act.status === "PENDING" ? "bg-yellow-400" : "bg-red-400"}`} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-zinc-800 truncate">{act.title}</p>
-                                        <p className="text-[11px] text-zinc-400">{act.hours}h · {act.status}</p>
+                                        <p className="text-[11px] text-zinc-400">{act.hours}s · {act.status === 'APPROVED' ? 'ONAYLANDI' : act.status === 'PENDING' ? 'BEKLEMEDE' : 'REDDEDİLDİ'}</p>
                                     </div>
                                     <span className="text-[10px] text-zinc-400">
                                         {new Date(act.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
@@ -172,7 +172,7 @@ export default function ProfilePage() {
                                 </div>
                             ))}
                             {activities.length === 0 && (
-                                <p className="text-sm text-zinc-400">No activities yet</p>
+                                <p className="text-sm text-zinc-400">Henüz etkinlik yok</p>
                             )}
                         </div>
                     </div>
@@ -181,24 +181,24 @@ export default function ProfilePage() {
                     <div className="w-72 shrink-0 space-y-6">
                         {/* Volunteer Opportunities */}
                         <div className="bg-white rounded-[24px] shadow-sm border border-zinc-50 p-6">
-                            <h3 className="text-base font-bold text-zinc-900 mb-4">Quick Actions</h3>
+                            <h3 className="text-base font-bold text-zinc-900 mb-4">Hızlı İşlemler</h3>
                             <div className="space-y-3">
                                 <Link href="/dashboard/activities/new" className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-3 rounded-xl text-center transition-colors shadow-sm">
-                                    + Add Activity
+                                    + Yeni Etkinlik Ekle
                                 </Link>
                                 <Link href="/community" className="block w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-sm py-3 rounded-xl text-center transition-colors">
-                                    View Feed
+                                    Topluluk Akışını Gör
                                 </Link>
                                 <Link href="/gamified" className="block w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-sm py-3 rounded-xl text-center transition-colors">
-                                    Gamified View
+                                    Kazanımlar ve Rozetler
                                 </Link>
                             </div>
                         </div>
 
                         {/* Connections Placeholder */}
                         <div className="bg-white rounded-[24px] shadow-sm border border-zinc-50 p-6">
-                            <h3 className="text-base font-bold text-zinc-900 mb-4">Connections</h3>
-                            <p className="text-sm text-zinc-400 leading-relaxed">Connect with other volunteers in the <Link href="/community" className="text-red-500 font-bold hover:underline">Community</Link> section.</p>
+                            <h3 className="text-base font-bold text-zinc-900 mb-4">Topluluk Köşesi</h3>
+                            <p className="text-sm text-zinc-400 leading-relaxed">Senin gibi gönüllü olan gençlerle etkileşime geçmek için <Link href="/community" className="text-red-500 font-bold hover:underline">Topluluk</Link> bölümünü ziyaret edebilirsin.</p>
                         </div>
                     </div>
                 </div>

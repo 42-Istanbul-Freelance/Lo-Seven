@@ -28,7 +28,7 @@ public class User {
 
     @Column(nullable = false)
     private String firstName;
-    
+
     @Column(nullable = false)
     private String lastName;
 
@@ -38,7 +38,7 @@ public class User {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
+
     // Total approved volunteer hours
     @Column(name = "total_hours", columnDefinition = "integer default 0")
     @Builder.Default
@@ -54,10 +54,12 @@ public class User {
     @Builder.Default
     private Integer level = 1;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id")
     private School school;
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
 
     @PrePersist
     protected void onCreate() {

@@ -111,8 +111,8 @@ export default function ExplorePage() {
                             {activities.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-16 text-zinc-400">
                                     <svg className="w-10 h-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                                    <p className="font-semibold text-sm">No activities yet</p>
-                                    <Link href="/dashboard/activities/new" className="text-red-500 font-bold text-sm mt-2 hover:underline">Create your first one</Link>
+                                    <p className="font-semibold text-sm">Henüz etkinlik yok</p>
+                                    <Link href="/dashboard/activities/new" className="text-red-500 font-bold text-sm mt-2 hover:underline">İlk etkinliğini sen ekle</Link>
                                 </div>
                             ) : (
                                 activities.map((activity, index) => {
@@ -137,7 +137,7 @@ export default function ExplorePage() {
                                                         <div className="w-1.5 h-1.5 bg-white rounded-sm"></div>
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-zinc-500 mb-3">{activity.hours}h · {activity.status}</p>
+                                                <p className="text-[11px] text-zinc-500 mb-3">{activity.hours}s · {activity.status === 'APPROVED' ? 'ONAYLANDI' : activity.status === 'PENDING' ? 'BEKLEMEDE' : 'REDDEDİLDİ'}</p>
                                                 <div className="flex items-center justify-between gap-3 text-[10px] font-bold text-zinc-500">
                                                     <div className="flex-1 bg-zinc-100 h-1.5 rounded-full overflow-hidden">
                                                         <div className={`h-full rounded-full ${activity.status === "APPROVED" ? 'bg-green-400' : 'bg-zinc-400'}`} style={{ width: `${progress}%` }}></div>
@@ -186,7 +186,7 @@ export default function ExplorePage() {
                                 </div>
 
                                 <div className="mb-auto">
-                                    <h3 className="font-bold text-sm text-zinc-900 mb-2">Description</h3>
+                                    <h3 className="font-bold text-sm text-zinc-900 mb-2">Açıklama</h3>
                                     <p className="text-sm text-zinc-600 leading-relaxed max-w-md">
                                         {selectedActivity.description}
                                     </p>
@@ -194,20 +194,20 @@ export default function ExplorePage() {
 
                                 <div className="flex gap-4 mt-8 pt-6 border-t border-zinc-200/50">
                                     <Link href="/dashboard/activities/new" className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center">
-                                        Add New Activity
+                                        Yeni Etkinlik Ekle
                                     </Link>
                                     <Link href="/gamified" className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center">
-                                        See Achievements
+                                        Başarıları Gör
                                     </Link>
                                 </div>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center flex-1 text-zinc-400">
                                 <svg className="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                                <p className="font-bold text-lg mb-2">Start Exploring</p>
-                                <p className="text-sm text-center max-w-xs">Add your first volunteering activity and track your impact journey.</p>
+                                <p className="font-bold text-lg mb-2">Keşfetmeye Başla</p>
+                                <p className="text-sm text-center max-w-xs">İlk gönüllülük görevini ekle ve serüvenini buradan takip et.</p>
                                 <Link href="/dashboard/activities/new" className="mt-6 bg-red-500 hover:bg-red-600 text-white font-bold text-sm px-8 py-3 rounded-xl transition-colors shadow-sm">
-                                    Get Started
+                                    Başla
                                 </Link>
                             </div>
                         )}

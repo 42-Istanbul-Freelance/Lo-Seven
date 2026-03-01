@@ -23,4 +23,5 @@ public class UserResponse {
     private Integer totalHours;
     private Long schoolId;
     private LocalDateTime createdAt;
+    private String profilePictureUrl;
 }

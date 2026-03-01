@@ -75,15 +75,15 @@ export default function OnboardingPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                             </div>
-                            <h1 className="text-3xl font-bold text-zinc-900 mb-4">Welcome to PearlConnect!</h1>
+                            <h1 className="text-3xl font-bold text-zinc-900 mb-4">PearlConnect'e Hoş Geldiniz!</h1>
                             <p className="text-zinc-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                                Let's set up your volunteering profile. It only takes a minute!
+                                Gönüllülük profilini oluşturmaya başlayalım. Sadece bir dakikanı alacak!
                             </p>
                             <button
                                 onClick={() => setStep(2)}
                                 className="bg-red-500 hover:bg-red-600 text-white font-bold px-10 py-4 rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 text-sm"
                             >
-                                Get Started →
+                                Başla →
                             </button>
                         </div>
                     )}
@@ -91,32 +91,32 @@ export default function OnboardingPage() {
                     {/* Step 2: Create Your First Activity */}
                     {step === 2 && (
                         <div className="p-10 md:p-14">
-                            <h2 className="text-2xl font-bold text-zinc-900 mb-2">Create your first volunteering goal</h2>
-                            <p className="text-zinc-500 mb-10">Describe the activity you want to track.</p>
+                            <h2 className="text-2xl font-bold text-zinc-900 mb-2">İlk hedefiniz nedir?</h2>
+                            <p className="text-zinc-500 mb-10">Zaman ayırmak istediğiniz etkinliği belirleyin.</p>
 
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Activity Title</label>
+                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Etkinlik Başlığı</label>
                                     <input
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="e.g. Beach Cleanup Campaign"
+                                        placeholder="örn. Sahil Temizliği Kampanyası"
                                         className="w-full border border-zinc-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all bg-zinc-50/50"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Description</label>
+                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Açıklama</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={3}
-                                        placeholder="Tell us about this activity..."
+                                        placeholder="Projeden biaz bahset..."
                                         className="w-full border border-zinc-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all resize-none bg-zinc-50/50"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Target Hours</label>
+                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Hedef Süre (Saat)</label>
                                     <input
                                         type="number"
                                         min={1}
@@ -129,14 +129,14 @@ export default function OnboardingPage() {
 
                             <div className="flex items-center gap-4 mt-10">
                                 <button onClick={() => setStep(1)} className="text-zinc-400 hover:text-zinc-600 font-semibold text-sm transition-colors">
-                                    ← Back
+                                    ← Geri
                                 </button>
                                 <button
                                     onClick={() => setStep(3)}
                                     disabled={!formData.title || !formData.description}
                                     className="ml-auto bg-red-500 hover:bg-red-600 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold px-8 py-3.5 rounded-2xl shadow-sm transition-all text-sm"
                                 >
-                                    Next →
+                                    İleri →
                                 </button>
                             </div>
                         </div>
@@ -150,12 +150,12 @@ export default function OnboardingPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-zinc-900 mb-3">You're all set!</h2>
+                            <h2 className="text-2xl font-bold text-zinc-900 mb-3">Her şey hazır!</h2>
                             <p className="text-zinc-500 max-w-sm mx-auto mb-4 leading-relaxed">
-                                Your first activity <strong className="text-zinc-800">"{formData.title}"</strong> ({formData.hours}h) will be submitted for approval.
+                                İlk hedefin <strong className="text-zinc-800">"{formData.title}"</strong> ({formData.hours}s) onaylanmak üzere gönderilecek.
                             </p>
                             <p className="text-zinc-400 text-sm mb-10">
-                                You can always add more from the dashboard.
+                                Daha sonra her zaman panodan yeni etkinlikler ekleyebilirsin.
                             </p>
 
                             <div className="flex flex-col items-center gap-3">
@@ -164,13 +164,13 @@ export default function OnboardingPage() {
                                     disabled={loading}
                                     className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-10 py-4 rounded-2xl shadow-md transition-all text-sm"
                                 >
-                                    {loading ? "Submitting..." : "Start Volunteering 🚀"}
+                                    {loading ? "Gönderiliyor..." : "Gönüllü Ol 🚀"}
                                 </button>
                                 <button
                                     onClick={() => router.push("/dashboard")}
                                     className="text-zinc-400 hover:text-zinc-600 font-semibold text-sm transition-colors"
                                 >
-                                    Skip for now
+                                    Şimdilik atla
                                 </button>
                             </div>
                         </div>

@@ -91,9 +91,9 @@ export default function NotificationsPage() {
     const getTimeDiff = (dateStr: string) => {
         const diff = Date.now() - new Date(dateStr).getTime();
         const hours = Math.floor(diff / 3600000);
-        if (hours < 1) return "now";
-        if (hours < 24) return `${hours}h`;
-        return `${Math.floor(hours / 24)}d`;
+        if (hours < 1) return "şimdi";
+        if (hours < 24) return `${hours}s`;
+        return `${Math.floor(hours / 24)}g`;
     };
 
     if (status === "loading" || loading) {
@@ -112,46 +112,46 @@ export default function NotificationsPage() {
 
                 {/* Left Sidebar Menu */}
                 <aside className="w-full md:w-64 shrink-0 flex flex-col pt-4">
-                    <h2 className="text-xl font-bold text-zinc-400 px-4 mb-8 tracking-tight">Dashboard</h2>
+                    <h2 className="text-xl font-bold text-zinc-400 px-4 mb-8 tracking-tight">Menü</h2>
                     <nav className="space-y-6">
                         <div>
                             <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">
                                 <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                                Home
+                                Ana Sayfa
                             </Link>
                         </div>
                         <div>
                             <div className="flex items-center justify-between px-4 py-2 text-zinc-400 font-semibold mb-1 cursor-default">
                                 <span className="flex items-center gap-3 text-zinc-900">
                                     <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
-                                    Volunteering
+                                    Gönüllülük
                                 </span>
                             </div>
                             <div className="pl-12 flex flex-col space-y-3 mt-2 border-l-2 border-zinc-100 ml-6">
-                                <Link href="/explore" className="text-sm text-zinc-500 hover:text-zinc-900">Explore Opportunities</Link>
-                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">My Progress</Link>
-                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">Achievements</Link>
-                                <Link href="/community" className="text-sm text-zinc-500 hover:text-zinc-900">Community Feed</Link>
+                                <Link href="/explore" className="text-sm text-zinc-500 hover:text-zinc-900">Fırsatları Keşfet</Link>
+                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">Gelişimim</Link>
+                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">Başarılarım</Link>
+                                <Link href="/community" className="text-sm text-zinc-500 hover:text-zinc-900">Sosyal Akış</Link>
                             </div>
                         </div>
                         <div>
                             <div className="flex items-center justify-between px-4 py-2 text-zinc-400 font-semibold mb-1 cursor-default">
                                 <span className="flex items-center gap-3 text-zinc-400">
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    Volunteer Hours
+                                    Gönüllü Paneli
                                 </span>
                             </div>
                             <div className="pl-12 flex flex-col space-y-3 mt-2 border-l-2 border-zinc-100 ml-6">
-                                <Link href="/profile" className="text-sm text-zinc-500 hover:text-zinc-900">My Profile</Link>
-                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">Badges</Link>
-                                <Link href="/dashboard" className="text-sm text-zinc-500 hover:text-zinc-900">Recent Activities</Link>
+                                <Link href="/profile" className="text-sm text-zinc-500 hover:text-zinc-900">Profilim</Link>
+                                <Link href="/gamified" className="text-sm text-zinc-500 hover:text-zinc-900">Rozetlerim</Link>
+                                <Link href="/dashboard" className="text-sm text-zinc-500 hover:text-zinc-900">Son Aktiviteler</Link>
                             </div>
                         </div>
                     </nav>
                     <div className="mt-auto pt-10 px-4">
                         <Link href="/onboarding" className="flex items-center gap-2 text-sm text-zinc-400 font-semibold hover:text-zinc-900">
                             <span className="w-5 h-5 rounded-full border border-zinc-300 flex items-center justify-center text-[10px]">i</span>
-                            Get Started with Volunteering
+                            Gönüllülüğe Başla
                         </Link>
                     </div>
                 </aside>
@@ -162,12 +162,12 @@ export default function NotificationsPage() {
                     {/* Notifications Feed */}
                     <div className="flex-1 p-8 md:p-12 border-r border-zinc-50">
                         <div className="flex items-center justify-between mb-12">
-                            <h1 className="text-3xl font-bold text-zinc-400/50 uppercase tracking-wider">Notifications</h1>
+                            <h1 className="text-3xl font-bold text-zinc-400/50 uppercase tracking-wider">Bildirimler</h1>
                             <button
                                 onClick={handleMarkAllRead}
                                 className="bg-zinc-50 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-full px-5 py-2 hover:bg-zinc-100 transition-colors"
                             >
-                                Mark all as read
+                                Tümünü okundu işaretle
                             </button>
                         </div>
 
@@ -175,8 +175,8 @@ export default function NotificationsPage() {
                             {filteredNotifications.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
                                     <svg className="w-12 h-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                                    <p className="font-semibold">No notifications</p>
-                                    <p className="text-sm mt-1">You're all caught up!</p>
+                                    <p className="font-semibold">Henüz bildirim yok</p>
+                                    <p className="text-sm mt-1">Her şey harika görünüyor!</p>
                                 </div>
                             ) : (
                                 filteredNotifications.map((notification) => (
@@ -206,14 +206,14 @@ export default function NotificationsPage() {
 
                     {/* Right Filter Sidebar */}
                     <div className="w-72 shrink-0 bg-[#fafafa] p-8 hidden lg:block">
-                        <h3 className="text-lg font-bold text-zinc-400 mb-8">Filter</h3>
+                        <h3 className="text-lg font-bold text-zinc-400 mb-8">Filtrele</h3>
                         <div className="bg-[#f2f2f2] rounded-3xl p-6 space-y-6 border border-zinc-100 shadow-sm">
                             {[
-                                { key: "COMMENT", label: "Comments" },
-                                { key: "LIKE", label: "Likes" },
-                                { key: "ACTIVITY_APPROVED", label: "Approvals" },
-                                { key: "ACTIVITY_REJECTED", label: "Rejections" },
-                                { key: "BADGE", label: "Achievements" },
+                                { key: "COMMENT", label: "Yorumlar" },
+                                { key: "LIKE", label: "Beğeniler" },
+                                { key: "ACTIVITY_APPROVED", label: "Onaylananlar" },
+                                { key: "ACTIVITY_REJECTED", label: "Reddedilenler" },
+                                { key: "BADGE", label: "Rozetler" },
                             ].map(({ key, label }) => (
                                 <label key={key} className="flex items-center justify-between cursor-pointer group">
                                     <span className="text-sm font-semibold text-zinc-500 group-hover:text-zinc-800 transition-colors">{label}</span>
@@ -237,11 +237,11 @@ export default function NotificationsPage() {
                                 <button
                                     onClick={() => setFilter(["LIKE", "COMMENT", "ACTIVITY_APPROVED", "ACTIVITY_REJECTED", "BADGE"])}
                                     className="flex-1 bg-red-100 text-red-600 font-bold text-[11px] uppercase tracking-wide py-2.5 rounded-xl hover:bg-red-200 transition-colors"
-                                >Select all</button>
+                                >Tümünü Seç</button>
                                 <button
                                     onClick={() => setFilter([])}
                                     className="flex-1 bg-red-100 text-red-600/60 font-bold text-[11px] uppercase tracking-wide py-2.5 rounded-xl hover:bg-red-200 hover:text-red-600 transition-colors"
-                                >Clear all</button>
+                                >Temizle</button>
                             </div>
                         </div>
                     </div>

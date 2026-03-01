@@ -84,7 +84,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-zinc-700">Email Adresi</label>
+                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-zinc-700">E-posta Adresi</label>
                             <div className="mt-1">
                                 <input id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange}
                                     className="block w-full rounded-xl border border-zinc-200 bg-[#fafafa] py-3 px-4 text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all sm:text-sm" placeholder="ornek@posta.com" />

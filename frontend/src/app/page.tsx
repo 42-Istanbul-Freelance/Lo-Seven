@@ -18,7 +18,7 @@ export default function Home() {
 							/>
 						</div>
 						<p className="font-mono text-zinc-500 text-sm">
-							[ status: aktif ] Gönüllülük takip ve sosyal etki ağı platformu.
+							Gönüllülük takip ve sosyal etki ağı platformu.
 						</p>
 					</div>
 
@@ -38,7 +38,7 @@ export default function Home() {
 								<p>✓ Gönüllülük saati takibi ve onay sistemi</p>
 								<p>✓ Sosyal akış — paylaş, beğen, yorum yap</p>
 								<p>✓ Oyunlaştırma — İnci Rozetleri ve XP sistemi</p>
-								<p>✓ HQ Rapor Paneli — okul bazlı istatistikler</p>
+								<p>✓ Merkez Rapor Paneli — okul bazlı istatistikler</p>
 							</div>
 						</div>
 					</div>
@@ -50,10 +50,10 @@ export default function Home() {
 						>
 							<div>
 								<h3 className="font-mono text-zinc-900 text-sm flex items-center gap-2 font-bold">
-									[ GİRİŞ YAP ]
+									GİRİŞ YAP
 									<span className="group-hover:translate-x-1 transition-transform">→</span>
 								</h3>
-								<p className="text-zinc-500 text-xs mt-2">Hesabınla giriş yap ve dashboard&apos;a geç.</p>
+								<p className="text-zinc-500 text-xs mt-2">Hesabınla giriş yap ve panele geç.</p>
 							</div>
 						</Link>
 
@@ -63,7 +63,7 @@ export default function Home() {
 						>
 							<div>
 								<h3 className="font-mono text-zinc-900 text-sm flex items-center gap-2 font-bold">
-									[ KAYIT OL ]
+									KAYIT OL
 									<span className="group-hover:translate-x-1 transition-transform">→</span>
 								</h3>
 								<p className="text-zinc-500 text-xs mt-2">Yeni hesap oluştur ve gönüllü ol.</p>

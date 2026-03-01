@@ -42,15 +42,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         System.out.println("[DEBUG LOGIN] Attempting login for: " + loginRequest.getEmail());
-        System.out.println("[DEBUG LOGIN] Password length: " + (loginRequest.getPassword() != null ? loginRequest.getPassword().length() : "null"));
-        
+        System.out.println("[DEBUG LOGIN] Password length: "
+                + (loginRequest.getPassword() != null ? loginRequest.getPassword().length() : "null"));
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
-                            loginRequest.getPassword()
-                    )
-            );
+                            loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -62,8 +61,8 @@ public class AuthController {
                     userDetails.getUsername(),
                     userDetails.getUser().getFirstName(),
                     userDetails.getUser().getLastName(),
-                    userDetails.getUser().getRole().name()
-            ));
+                    userDetails.getUser().getRole().name(),
+                    userDetails.getUser().getProfilePictureUrl()));
         } catch (Exception e) {
             System.out.println("[DEBUG LOGIN] Auth failed: " + e.getMessage());
             // Check manually
@@ -71,7 +70,8 @@ public class AuthController {
             if (userOpt.isPresent()) {
                 var user = userOpt.get();
                 boolean matches = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-                System.out.println("[DEBUG LOGIN] User found. Password hash: " + user.getPassword().substring(0, 10) + "...");
+                System.out.println(
+                        "[DEBUG LOGIN] User found. Password hash: " + user.getPassword().substring(0, 10) + "...");
                 System.out.println("[DEBUG LOGIN] Manual BCrypt match: " + matches);
             } else {
                 System.out.println("[DEBUG LOGIN] User NOT found in DB");
