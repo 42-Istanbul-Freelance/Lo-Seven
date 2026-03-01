@@ -22,6 +22,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
     private final GamificationService gamificationService;
+    private final NotificationService notificationService;
 
     public PostResponse createPost(PostRequest request, Long userId) {
         User author = userRepository.findById(userId)
@@ -67,6 +68,19 @@ public class PostService {
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
+
+        // Notify post author about the comment
+        if (!post.getAuthor().getId().equals(userId)) {
+            String actorName = author.getFirstName() + " " + author.getLastName();
+            notificationService.createNotification(
+                    post.getAuthor().getId(),
+                    "COMMENT",
+                    actorName + " commented on your post",
+                    actorName,
+                    postId
+            );
+        }
+
         return mapToCommentResponse(savedComment);
     }
 
@@ -90,6 +104,14 @@ public class PostService {
             // Award point to the author of the post
             if (!post.getAuthor().getId().equals(userId)) {
                 gamificationService.awardPointsForLike(post.getAuthor().getId());
+                String actorName = user.getFirstName() + " " + user.getLastName();
+                notificationService.createNotification(
+                        post.getAuthor().getId(),
+                        "LIKE",
+                        actorName + " liked your post",
+                        actorName,
+                        postId
+                );
             }
         }
 

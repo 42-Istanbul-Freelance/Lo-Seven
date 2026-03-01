@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
 	return (
@@ -6,9 +7,16 @@ export default function Home() {
 			<div className="max-w-3xl w-full border border-zinc-200 bg-white rounded-xl p-8 shadow-lg">
 				<div className="space-y-6">
 					<div className="border-l-4 border-indigo-500 pl-4 py-2">
-						<h1 className="text-3xl md:text-5xl font-serif font-medium tracking-tight text-zinc-900 mb-2">
-							Lösev Medya
-						</h1>
+						<div className="mb-4">
+							<Image
+								src="/logo.svg"
+								alt="LoSeven Logo"
+								width={200}
+								height={60}
+								className="object-contain"
+								priority
+							/>
+						</div>
 						<p className="font-mono text-zinc-500 text-sm">
 							[ status: aktif ] Gönüllülük takip ve sosyal etki ağı platformu.
 						</p>
@@ -16,7 +24,7 @@ export default function Home() {
 
 					<div className="space-y-4">
 						<p className="text-zinc-600 leading-relaxed font-sans mt-4">
-							Lösev Medya, LÖSEV bünyesindeki okullarda gönüllülük çalışmalarını
+							LoSeven, LÖSEV bünyesindeki okullarda gönüllülük çalışmalarını
 							takip etmek, onaylamak ve görselleştirmek için geliştirilmiş bir
 							sosyal etki ağı platformudur. Öğrenciler aktivitelerini kaydeder,
 							öğretmenler onaylar, herkes sosyal akışta paylaşır.

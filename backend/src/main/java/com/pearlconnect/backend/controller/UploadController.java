@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * Simple Cloudinary upload controller.
@@ -43,71 +46,35 @@ public class UploadController {
         }
 
         try {
-            String boundary = UUID.randomUUID().toString();
-            String cloudinaryUrl = "https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload";
-
-            URL url = new URL(cloudinaryUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-
-            OutputStream os = conn.getOutputStream();
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true);
-
-            // Upload preset field
-            writer.append("--").append(boundary).append("\r\n");
-            writer.append("Content-Disposition: form-data; name=\"upload_preset\"\r\n\r\n");
-            writer.append(uploadPreset).append("\r\n");
-
-            // File field
-            writer.append("--").append(boundary).append("\r\n");
-            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
-                    .append(file.getOriginalFilename()).append("\"\r\n");
-            writer.append("Content-Type: ").append(file.getContentType()).append("\r\n\r\n");
-            writer.flush();
-
-            os.write(file.getBytes());
-            os.flush();
-
-            writer.append("\r\n");
-            writer.append("--").append(boundary).append("--\r\n");
-            writer.flush();
-            writer.close();
-
-            int responseCode = conn.getResponseCode();
-            StringBuilder response = new StringBuilder();
-            BufferedReader reader;
-
-            if (responseCode >= 200 && responseCode < 300) {
-                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            // Create uploads directory if it doesn't exist at the project root
+            Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
             }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
-            reader.close();
+            String uniqueFilename = UUID.randomUUID().toString() + extension;
+            
+            // Save file absolutely
+            Path targetLocation = uploadDir.resolve(uniqueFilename);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            if (responseCode >= 200 && responseCode < 300) {
-                // Parse the secure_url from JSON response (simple string extraction)
-                String jsonResponse = response.toString();
-                String secureUrl = extractJsonValue(jsonResponse, "secure_url");
+            // Construct local full URL
+            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/uploads/").path(uniqueFilename).toUriString();
 
-                return ResponseEntity.ok(Map.of(
-                        "url", secureUrl != null ? secureUrl : "",
-                        "message", "Dosya başarıyla yüklendi."
-                ));
-            } else {
-                return ResponseEntity.status(responseCode)
-                        .body(Map.of("error", "Cloudinary yükleme hatası: " + response.toString()));
-            }
+            return ResponseEntity.ok(Map.of(
+                    "url", fileUrl,
+                    "message", "Dosya başarıyla yüklendi."
+            ));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Dosya yüklenirken hata oluştu: " + e.getMessage()));
+                    .body(Map.of("error", "Dosya kaydedilirken hata oluştu: " + e.getMessage()));
         }
     }
 

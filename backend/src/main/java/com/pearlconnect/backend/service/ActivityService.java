@@ -21,6 +21,7 @@ public class ActivityService {
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
     private final GamificationService gamificationService;
+    private final NotificationService notificationService;
 
     public ActivityResponse createActivity(ActivityRequest request, Long studentId) {
         User student = userRepository.findById(studentId)
@@ -73,6 +74,16 @@ public class ActivityService {
         // Award gamification points
         gamificationService.awardPointsForActivity(student.getId(), activity.getHours());
 
+        // Notify the student
+        String approverName = approver.getFirstName() + " " + approver.getLastName();
+        notificationService.createNotification(
+                student.getId(),
+                "ACTIVITY_APPROVED",
+                "Your activity \"" + activity.getTitle() + "\" has been approved by " + approverName,
+                approverName,
+                activityId
+        );
+
         return mapToDto(activityRepository.save(activity));
     }
 
@@ -89,6 +100,16 @@ public class ActivityService {
         activity.setStatus(ActivityStatus.REJECTED);
         activity.setApprover(approver);
         activity.setApprovedAt(LocalDateTime.now());
+
+        // Notify the student
+        String approverName = approver.getFirstName() + " " + approver.getLastName();
+        notificationService.createNotification(
+                activity.getStudent().getId(),
+                "ACTIVITY_REJECTED",
+                "Your activity \"" + activity.getTitle() + "\" has been rejected by " + approverName,
+                approverName,
+                activityId
+        );
 
         return mapToDto(activityRepository.save(activity));
     }
