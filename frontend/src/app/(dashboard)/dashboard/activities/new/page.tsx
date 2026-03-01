@@ -31,12 +31,11 @@ export default function NewActivityPage() {
         );
     }
 
-    if (status === "unauthenticated" || (session?.user?.role && session.user.role.toUpperCase() !== "STUDENT")) {
-        console.log("Unauthorized Access details:", { sessionRole: session?.user?.role, status });
+    if (status === "unauthenticated") {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#fafafa] font-sans">
-                <p className="text-zinc-500 mb-4">Yetkisiz Erişim. Lütfen öğrenci hesabınızla giriş yapın.</p>
-                <button onClick={() => router.push('/dashboard')} className="px-4 py-2 bg-red-500 text-white font-bold rounded-xl text-sm">Dashboard'a Dön</button>
+                <p className="text-zinc-500 mb-4">Giriş yapmanız gerekiyor.</p>
+                <button onClick={() => router.push('/login')} className="px-4 py-2 bg-red-500 text-white font-bold rounded-xl text-sm">Giriş Yap</button>
             </div>
         );
     }
