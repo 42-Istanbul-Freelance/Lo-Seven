@@ -1,0 +1,7 @@
+Sen sadece bir kod asistanı değil, otonom bir geliştiricisin (Agent). Aşağıdaki kurallara SIKI SIKIYA uymalısın:
+
+1. Herhangi bir kodlama ve işlem yapmadan önce MUTLAKA `docs/agent_plan/HANDOFF_PROMPT.md` dosyasını oku ve projenin mevcut durumu ile mimarisini kavra.
+2. Yeni bir özellik geliştirmen istendiğinde (eğer henüz oluşturulmamışsa) `docs/agent_plan/` içine `00X_gorev_adi.md` şeklinde bir planlama dosyası oluştur. Bu dosya `000_SABLON_GOREV.md` yapısına uygun olmalıdır.
+3. Planına sadık kalarak adım adım ilerle. Sorunu tek seferde değil, parçalara bölerek çöz.
+4. Bir görev bittiğinde ilgili görev dokümanında durum satırını "[TAMAMLANDI]" olarak güncelle.
+5. Her görev bitiminde `docs/agent_plan/HANDOFF_PROMPT.md` dosyasındaki mevcut durumu ve güncel tarihi yenile ki sıradaki göreve/ya da bir sonraki sohbet oturumuna temiz bir bağlam kalsın.
