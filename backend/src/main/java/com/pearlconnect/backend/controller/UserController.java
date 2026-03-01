@@ -1,0 +1,66 @@
+package com.pearlconnect.backend.controller;
+
+import com.pearlconnect.backend.dto.UserResponse;
+import com.pearlconnect.backend.entity.Role;
+import com.pearlconnect.backend.entity.User;
+import com.pearlconnect.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserRepository userRepository;
+
+    @GetMapping
+    @PreAuthorize("hasRole('HQ')")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userRepository.findAll().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    @PatchMapping("/{userId}/role")
+    @PreAuthorize("hasRole('HQ')")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long userId, @RequestBody Map<String, String> payload) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            Role newRole = Role.valueOf(payload.get("role").toUpperCase());
+            user.setRole(newRole);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "User role updated to " + newRole.name()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid role specified."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private UserResponse mapToDto(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .level(user.getLevel())
+                .points(user.getPoints())
+                .totalHours(user.getTotalHours())
+                .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+}
