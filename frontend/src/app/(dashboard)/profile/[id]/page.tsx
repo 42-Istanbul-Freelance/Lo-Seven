@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 
@@ -40,34 +40,47 @@ type ActivityType = {
     createdAt: string;
 };
 
-export default function ProfilePage() {
+export default function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const { data: session, status } = useSession();
     const router = useRouter();
     const [gamification, setGamification] = useState<GamificationProfile | null>(null);
     const [activities, setActivities] = useState<ActivityType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [profileUser, setProfileUser] = useState<{ name: string, email: string } | null>(null);
     const [connections, setConnections] = useState<Record<string, ConnectionUser[]>>({});
 
     const fetchData = useCallback(async () => {
         if (!session?.accessToken) return;
         try {
-            const [gamRes, actRes] = await Promise.all([
-                fetch(`${getApiUrl()}/api/v1/gamification/profile`, {
+            const [gamRes, actRes, userRes, connRes] = await Promise.all([
+                fetch(`${getApiUrl()}/api/v1/gamification/profile/${id}`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` },
                 }),
-                fetch(`${getApiUrl()}/api/v1/activities/my`, {
+                fetch(`${getApiUrl()}/api/v1/activities/user/${id}`, {
+                    headers: { "Authorization": `Bearer ${session.accessToken}` },
+                }),
+                fetch(`${getApiUrl()}/api/v1/users/${id}`, {
+                    headers: { "Authorization": `Bearer ${session.accessToken}` },
+                }),
+                fetch(`${getApiUrl()}/api/v1/users/${id}/connections`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` },
                 }),
             ]);
-            if (gamRes.ok) setGamification(await gamRes.json());
+            if (gamRes.ok) {
+                const gamData = await gamRes.json();
+                setGamification(gamData);
+            }
             if (actRes.ok) setActivities(await actRes.json());
-
-            // Fetch connections using the user's own ID
-            if (session.user?.id) {
-                const connRes = await fetch(`${getApiUrl()}/api/v1/users/${session.user.id}/connections`, {
-                    headers: { "Authorization": `Bearer ${session.accessToken}` },
-                });
-                if (connRes.ok) setConnections(await connRes.json());
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                // Map from the generic user data endpoint to name/email string
+                setProfileUser({ name: `${userData.firstName} ${userData.lastName}`, email: userData.email });
+            } else {
+                setProfileUser({ name: `Kullanıcı #${id}`, email: '' });
+            }
+            if (connRes.ok) {
+                setConnections(await connRes.json());
             }
         } catch (err) {
             console.error("Failed to fetch profile data:", err);
@@ -94,7 +107,7 @@ export default function ProfilePage() {
 
     if (!session) return null;
 
-    const user = session.user;
+    const user = profileUser;
     const totalHours = gamification?.totalHours ?? 0;
     const level = gamification?.level ?? 1;
     const badges = gamification?.earnedBadges ?? [];
@@ -194,9 +207,8 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Right Panel: Connections & Quick Actions */}
+                    {/* Right Panel: Connections */}
                     <div className="w-72 shrink-0 space-y-6">
-                        {/* Connections */}
                         <div className="bg-white rounded-[24px] shadow-sm border border-zinc-50 p-6">
                             <h3 className="text-base font-bold text-zinc-900 mb-4">Bağlantılar</h3>
                             {Object.keys(connections).length > 0 ? (
@@ -227,13 +239,9 @@ export default function ProfilePage() {
                             )}
                         </div>
 
-                        {/* Quick Actions */}
                         <div className="bg-white rounded-[24px] shadow-sm border border-zinc-50 p-6">
                             <h3 className="text-base font-bold text-zinc-900 mb-4">Hızlı İşlemler</h3>
                             <div className="space-y-3">
-                                <Link href="/dashboard/activities/new" className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-3 rounded-xl text-center transition-colors shadow-sm">
-                                    + Yeni Etkinlik Ekle
-                                </Link>
                                 <Link href="/community" className="block w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-sm py-3 rounded-xl text-center transition-colors">
                                     Topluluk Akışını Gör
                                 </Link>

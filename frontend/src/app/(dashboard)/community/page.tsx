@@ -167,7 +167,7 @@ export default function CommunityPage() {
                             <div className="w-6 h-6 rounded bg-red-50 flex items-center justify-center border border-red-100">
                                 <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 3.8l7.2 14.4H4.8L12 5.8z" /></svg>
                             </div>
-                            <span className="font-bold text-sm text-zinc-900 tracking-tight">PearlConnect</span>
+                            <span className="font-bold text-sm text-zinc-900 tracking-tight">Sosyal Akış</span>
                         </Link>
                         <div className="flex items-center gap-5 text-zinc-600">
                             <Link href="/notifications" className="hover:text-zinc-900 transition-colors">
@@ -235,7 +235,9 @@ export default function CommunityPage() {
                                         <div className="flex-1 min-w-0">
                                             {/* Author Name + Time */}
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-bold text-sm text-zinc-800">{post.authorName}</span>
+                                                <Link href={`/profile/${post.authorId}`} className="font-bold text-sm text-zinc-800 hover:underline">
+                                                    {post.authorName}
+                                                </Link>
                                                 <span className="text-[11px] text-zinc-400">
                                                     {new Date(post.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
                                                 </span>

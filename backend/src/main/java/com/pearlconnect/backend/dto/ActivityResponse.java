@@ -23,6 +23,7 @@ public class ActivityResponse {
     private String studentName;
     private Long approverId;
     private String approverName;
+    private LocalDateTime eventDate;
     private LocalDateTime createdAt;
     private LocalDateTime approvedAt;
 }

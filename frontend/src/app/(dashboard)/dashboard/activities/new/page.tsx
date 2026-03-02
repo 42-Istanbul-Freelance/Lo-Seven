@@ -14,6 +14,7 @@ export default function NewActivityPage() {
         title: "",
         description: "",
         hours: "",
+        eventDate: "",
     });
     const [mediaUrl, setMediaUrl] = useState("");
     const [error, setError] = useState("");
@@ -98,6 +99,7 @@ export default function NewActivityPage() {
                     title: formData.title,
                     description: formData.description,
                     hours: parseInt(formData.hours, 10),
+                    eventDate: formData.eventDate, // Send directly as "YYYY-MM-DDTHH:mm"
                     mediaUrl: mediaUrl || null,
                 }),
             });
@@ -157,7 +159,7 @@ export default function NewActivityPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="description" className="block text-sm font-medium leading-6 text-zinc-700">Neler Yaptınız?</label>
+                            <label htmlFor="description" className="block text-sm font-medium leading-6 text-zinc-700">Neler Yapacaksınız?</label>
                             <div className="mt-1">
                                 <textarea id="description" name="description" required rows={4} value={formData.description} onChange={handleChange}
                                     placeholder="Etkinlik detaylarını kısaca anlatın..."
@@ -166,7 +168,7 @@ export default function NewActivityPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="hours" className="block text-sm font-medium leading-6 text-zinc-700">Katılım Süresi (Saat)</label>
+                            <label htmlFor="hours" className="block text-sm font-medium leading-6 text-zinc-700">Etkinlik Süresi (Saat)</label>
                             <div className="mt-1">
                                 <input type="number" id="hours" name="hours" min="1" required value={formData.hours} onChange={handleChange}
                                     placeholder="Örn: 4"
@@ -174,9 +176,17 @@ export default function NewActivityPage() {
                             </div>
                         </div>
 
+                        <div>
+                            <label htmlFor="eventDate" className="block text-sm font-medium leading-6 text-zinc-700">Etkinlik Tarihi</label>
+                            <div className="mt-1">
+                                <input type="datetime-local" id="eventDate" name="eventDate" required value={formData.eventDate} onChange={handleChange}
+                                    className="block w-full rounded-xl border border-zinc-200 bg-[#fafafa] py-3 px-4 text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all sm:text-sm" />
+                            </div>
+                        </div>
+
                         {/* File Upload */}
                         <div>
-                            <label className="block text-sm font-medium leading-6 text-zinc-700 mb-1">Kanıt & Medya</label>
+                            <label className="block text-sm font-medium leading-6 text-zinc-700 mb-1">Etkinlik Afişi Ekle</label>
                             <div onClick={() => fileInputRef.current?.click()}
                                 className="border-2 border-dashed border-zinc-200 bg-[#fafafa] rounded-xl p-8 text-center cursor-pointer hover:border-red-400 hover:bg-white transition-all group">
                                 {isUploading ? (
@@ -214,7 +224,7 @@ export default function NewActivityPage() {
                         <div className="pt-6 border-t border-zinc-100">
                             <button type="submit" disabled={isLoading || isUploading}
                                 className="w-full flex justify-center rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-red-600 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                {isLoading ? "Gönderiliyor..." : "Etkiyi Paylaş"}
+                                {isLoading ? "Gönderiliyor..." : "Etkinlik Talebi Oluştur"}
                             </button>
                         </div>
                     </form>

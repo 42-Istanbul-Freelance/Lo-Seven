@@ -20,6 +20,58 @@ public class UserController {
 
     private final UserRepository userRepository;
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(mapToDto(user));
+    }
+
+    @GetMapping("/{userId}/connections")
+    public ResponseEntity<Map<String, List<UserResponse>>> getUserConnections(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, List<UserResponse>> connections = new java.util.HashMap<>();
+
+        if (user.getRole() == Role.STUDENT) {
+            if (user.getSchool() != null) {
+                List<UserResponse> teachers = userRepository
+                        .findBySchoolIdAndRole(user.getSchool().getId(), Role.TEACHER)
+                        .stream().map(this::mapToDto).collect(Collectors.toList());
+                connections.put("TEACHERS", teachers);
+
+                List<UserResponse> peers = userRepository.findBySchoolIdAndRole(user.getSchool().getId(), Role.STUDENT)
+                        .stream()
+                        .filter(u -> !u.getId().equals(user.getId()))
+                        .map(this::mapToDto).collect(Collectors.toList());
+                connections.put("STUDENTS", peers);
+            }
+        } else if (user.getRole() == Role.TEACHER) {
+            if (user.getSchool() != null) {
+                List<UserResponse> students = userRepository
+                        .findBySchoolIdAndRole(user.getSchool().getId(), Role.STUDENT)
+                        .stream().map(this::mapToDto).collect(Collectors.toList());
+                connections.put("STUDENTS", students);
+
+                List<UserResponse> schools = userRepository
+                        .findBySchoolIdAndRole(user.getSchool().getId(), Role.PRINCIPAL)
+                        .stream().map(this::mapToDto).collect(Collectors.toList());
+                connections.put("SCHOOL", schools);
+            }
+        } else if (user.getRole() == Role.PRINCIPAL) {
+            List<UserResponse> hq = userRepository.findByRole(Role.HQ)
+                    .stream().map(this::mapToDto).collect(Collectors.toList());
+            connections.put("HQ", hq);
+        }
+
+        return ResponseEntity.ok(connections);
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('HQ')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {

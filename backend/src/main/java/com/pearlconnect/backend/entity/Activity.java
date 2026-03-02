@@ -29,6 +29,9 @@ public class Activity {
     @Column(nullable = false)
     private Integer hours;
 
+    @Column(name = "event_date", nullable = false)
+    private LocalDateTime eventDate;
+
     private String mediaUrl;
 
     @Enumerated(EnumType.STRING)
@@ -46,7 +49,7 @@ public class Activity {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
+
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 

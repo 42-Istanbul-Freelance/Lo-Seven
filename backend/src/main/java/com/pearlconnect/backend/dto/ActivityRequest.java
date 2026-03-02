@@ -8,6 +8,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -25,4 +28,8 @@ public class ActivityRequest {
     private Integer hours;
 
     private String mediaUrl;
+
+    @NotNull(message = "Event date is required")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime eventDate;
 }

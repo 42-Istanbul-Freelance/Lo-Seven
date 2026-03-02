@@ -3,6 +3,7 @@ package com.pearlconnect.backend.controller;
 import com.pearlconnect.backend.dto.AuthResponse;
 import com.pearlconnect.backend.dto.LoginRequest;
 import com.pearlconnect.backend.dto.RegisterRequest;
+import com.pearlconnect.backend.entity.Role;
 import com.pearlconnect.backend.entity.School;
 import com.pearlconnect.backend.entity.User;
 import com.pearlconnect.backend.repository.SchoolRepository;
@@ -88,22 +89,35 @@ public class AuthController {
 
         User user = User.builder()
                 .firstName(registerRequest.getFirstName())
-                .lastName(registerRequest.getLastName())
+                .lastName(registerRequest.getLastName() != null ? registerRequest.getLastName() : "")
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .role(registerRequest.getRole())
                 .build();
 
-        if (registerRequest.getSchoolId() != null) {
+        if (registerRequest.getRole() == Role.PRINCIPAL && registerRequest.getSchoolName() != null) {
+            // PRINCIPAL is registering a new school
+            School newSchool = School.builder()
+                    .name(registerRequest.getSchoolName())
+                    .address(registerRequest.getSchoolName()) // Use school name as address placeholder
+                    .schoolType(registerRequest.getSchoolType() != null ? registerRequest.getSchoolType() : "LISE")
+                    .build();
+            newSchool = schoolRepository.save(newSchool);
+            user.setSchool(newSchool);
+        } else if (registerRequest.getSchoolId() != null) {
             School school = schoolRepository.findById(registerRequest.getSchoolId()).orElse(null);
             user.setSchool(school);
         } else {
-            // Demo fallback: assign the first available school if none provided
             schoolRepository.findAll().stream().findFirst().ifPresent(user::setSchool);
         }
 
         userRepository.save(user);
 
         return ResponseEntity.ok("User registered successfully");
+    }
+
+    @GetMapping("/schools")
+    public ResponseEntity<?> getSchools() {
+        return ResponseEntity.ok(schoolRepository.findAll());
     }
 }

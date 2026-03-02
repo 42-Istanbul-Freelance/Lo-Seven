@@ -27,134 +27,128 @@ public class DataInitializer {
         @Bean
         public CommandLineRunner loadData() {
                 return args -> {
-                        School demoSchool;
+                        List<School> schools = new java.util.ArrayList<>();
+
+                        // ── Schools ──
                         if (schoolRepository.count() == 0) {
-                                demoSchool = School.builder()
+                                schools.add(schoolRepository.save(School.builder()
                                                 .name("LÖSEV Koleji Ankara")
                                                 .address("Çankaya, Ankara")
-                                                .build();
-                                demoSchool = schoolRepository.save(demoSchool);
-
-                                schoolRepository.save(School.builder()
+                                                .schoolType("LISE")
+                                                .build()));
+                                schools.add(schoolRepository.save(School.builder()
                                                 .name("LÖSEV Koleji İstanbul")
                                                 .address("Kadıköy, İstanbul")
-                                                .build());
-
-                                schoolRepository.save(School.builder()
+                                                .schoolType("LISE")
+                                                .build()));
+                                schools.add(schoolRepository.save(School.builder()
                                                 .name("LÖSEV Koleji İzmir")
                                                 .address("Bornova, İzmir")
-                                                .build());
-
-                                System.out.println("Demo schools created.");
+                                                .schoolType("ORTAOKUL")
+                                                .build()));
+                                System.out.println("✓ 3 demo okul oluşturuldu.");
                         } else {
-                                demoSchool = schoolRepository.findAll().get(0);
+                                schools = schoolRepository.findAll();
                         }
 
-                        // Create test users for Docker testing
-                        if (userRepository.findByEmail("kurum@loseven.com").isEmpty()) {
-                                userRepository.save(User.builder()
-                                                .firstName("Kurum")
-                                                .lastName("Hesabı")
-                                                .email("kurum@loseven.com")
-                                                .password(passwordEncoder.encode("123456"))
-                                                .role(Role.HQ)
-                                                .level(1)
-                                                .build());
+                        // ── HQ (Genel Merkez) ──
+                        createUserIfNotExists("kurum@loseven.com", "LÖSEV", "Genel Merkez",
+                                        Role.HQ, null);
+
+                        // ── School Principals (Okul İdarecileri) ──
+                        String[][] principals = {
+                                        { "mudur.ankara@loseven.com", "Ankara Müdür", "" },
+                                        { "mudur.istanbul@loseven.com", "İstanbul Müdür", "" },
+                                        { "mudur.izmir@loseven.com", "İzmir Müdür", "" },
+                        };
+                        for (int i = 0; i < principals.length; i++) {
+                                createUserIfNotExists(principals[i][0], principals[i][1], principals[i][2],
+                                                Role.PRINCIPAL, schools.get(i));
                         }
 
-                        if (userRepository.findByEmail("ogretmen@loseven.com").isEmpty()) {
-                                userRepository.save(User.builder()
-                                                .firstName("Test")
-                                                .lastName("Öğretmen")
-                                                .email("ogretmen@loseven.com")
-                                                .password(passwordEncoder.encode("123456"))
-                                                .role(Role.TEACHER)
-                                                .school(demoSchool)
-                                                .level(1)
-                                                .build());
+                        // ── Teachers (2 per school) ──
+                        String[][] teachers = {
+                                        { "ogretmen1@loseven.com", "Ayşe", "Yılmaz" },
+                                        { "ogretmen2@loseven.com", "Mehmet", "Kaya" },
+                                        { "ogretmen3@loseven.com", "Fatma", "Demir" },
+                                        { "ogretmen4@loseven.com", "Ali", "Çelik" },
+                                        { "ogretmen5@loseven.com", "Zeynep", "Şahin" },
+                                        { "ogretmen6@loseven.com", "Hasan", "Öztürk" },
+                        };
+                        for (int i = 0; i < teachers.length; i++) {
+                                School school = schools.get(i / 2); // 2 teachers per school
+                                createUserIfNotExists(teachers[i][0], teachers[i][1], teachers[i][2],
+                                                Role.TEACHER, school);
                         }
 
-                        for (int i = 1; i <= 3; i++) {
-                                String studentEmail = "ogrenci" + i + "@loseven.com";
-                                if (userRepository.findByEmail(studentEmail).isEmpty()) {
-                                        userRepository.save(User.builder()
-                                                        .firstName("Test")
-                                                        .lastName("Öğrenci " + i)
-                                                        .email(studentEmail)
-                                                        .password(passwordEncoder.encode("123456"))
-                                                        .role(Role.STUDENT)
-                                                        .school(demoSchool)
-                                                        .level(1)
-                                                        .build());
-                                }
+                        // ── Students (4 per school = 12 total) ──
+                        String[][] students = {
+                                        // Ankara
+                                        { "ogrenci1@loseven.com", "Ece", "Arslan" },
+                                        { "ogrenci2@loseven.com", "Can", "Polat" },
+                                        { "ogrenci3@loseven.com", "Elif", "Koç" },
+                                        { "ogrenci4@loseven.com", "Burak", "Aydın" },
+                                        // İstanbul
+                                        { "ogrenci5@loseven.com", "Selin", "Yıldız" },
+                                        { "ogrenci6@loseven.com", "Emre", "Tuncer" },
+                                        { "ogrenci7@loseven.com", "Nisa", "Erdoğan" },
+                                        { "ogrenci8@loseven.com", "Oğuz", "Kurt" },
+                                        // İzmir
+                                        { "ogrenci9@loseven.com", "Defne", "Aksoy" },
+                                        { "ogrenci10@loseven.com", "Kaan", "Özkan" },
+                                        { "ogrenci11@loseven.com", "İrem", "Çetin" },
+                                        { "ogrenci12@loseven.com", "Barış", "Güneş" },
+                        };
+                        for (int i = 0; i < students.length; i++) {
+                                School school = schools.get(i / 4); // 4 students per school
+                                createUserIfNotExists(students[i][0], students[i][1], students[i][2],
+                                                Role.STUDENT, school);
                         }
 
-                        // Create Gamification Badges (Points-based + Hour-based Pearl Badges)
+                        System.out.println("✓ Tüm demo kullanıcıları oluşturuldu.");
+
+                        // ── Gamification Badges ──
                         if (badgeRepository.count() == 0) {
-                                // Points-based badges
                                 badgeRepository.save(Badge.builder()
                                                 .name("İlk Adım")
                                                 .description("Topluluğa katıldın ve ilk puanını kazandın!")
-                                                .iconUrl("🌟")
-                                                .requiredPoints(10)
-                                                .requiredHours(0)
-                                                .build());
-
-                                // ---- Pearl Badges (Hour-based from Promp.md) ----
+                                                .iconUrl("🌟").requiredPoints(10).requiredHours(0).build());
                                 badgeRepository.save(Badge.builder()
                                                 .name("Bronz İnci")
                                                 .description("25 saat gönüllülük çalışması tamamlandı!")
-                                                .iconUrl("🥉")
-                                                .requiredPoints(0)
-                                                .requiredHours(25)
-                                                .build());
-
+                                                .iconUrl("🥉").requiredPoints(0).requiredHours(25).build());
                                 badgeRepository.save(Badge.builder()
                                                 .name("Gümüş İnci")
                                                 .description("50 saat gönüllülük çalışması tamamlandı!")
-                                                .iconUrl("🥈")
-                                                .requiredPoints(0)
-                                                .requiredHours(50)
-                                                .build());
-
+                                                .iconUrl("🥈").requiredPoints(0).requiredHours(50).build());
                                 badgeRepository.save(Badge.builder()
                                                 .name("Altın İnci")
                                                 .description("100 saat gönüllülük çalışması ile altın seviyeye ulaştın!")
-                                                .iconUrl("🥇")
-                                                .requiredPoints(0)
-                                                .requiredHours(100)
-                                                .build());
-
+                                                .iconUrl("🥇").requiredPoints(0).requiredHours(100).build());
                                 badgeRepository.save(Badge.builder()
                                                 .name("Platin İnci Lider")
                                                 .description("200+ saat ile efsane gönüllü statüsüne ulaştın!")
-                                                .iconUrl("💎")
-                                                .requiredPoints(0)
-                                                .requiredHours(200)
-                                                .build());
-
-                                // Points-based milestones
+                                                .iconUrl("💎").requiredPoints(0).requiredHours(200).build());
                                 badgeRepository.save(Badge.builder()
-                                                .name("Toplum Gönüllüsü")
-                                                .description("2500 puana ulaştın. Harikasın!")
-                                                .iconUrl("🏆")
-                                                .requiredPoints(2500)
-                                                .requiredHours(0)
-                                                .build());
-
-                                System.out.println("Gamification Badges created (including Pearl hour-based badges).");
-                        }
-
-                        // Fix old users that don't have a school
-                        List<User> usersWithoutSchool = userRepository.findAll().stream()
-                                        .filter(u -> u.getSchool() == null)
-                                        .toList();
-
-                        for (User user : usersWithoutSchool) {
-                                user.setSchool(demoSchool);
-                                userRepository.save(user);
-                                System.out.println("Assigned Demo School to existing user: " + user.getEmail());
+                                                .name("Toplum Gönüllüsü").description("2500 puana ulaştın. Harikasın!")
+                                                .iconUrl("🏆").requiredPoints(2500).requiredHours(0).build());
+                                System.out.println("✓ Rozetler oluşturuldu.");
                         }
                 };
+        }
+
+        private void createUserIfNotExists(String email, String firstName, String lastName,
+                        Role role, School school) {
+                if (userRepository.findByEmail(email).isEmpty()) {
+                        userRepository.save(User.builder()
+                                        .firstName(firstName)
+                                        .lastName(lastName)
+                                        .email(email)
+                                        .password(passwordEncoder.encode("123456"))
+                                        .role(role)
+                                        .school(school)
+                                        .level(1)
+                                        .build());
+                }
         }
 }

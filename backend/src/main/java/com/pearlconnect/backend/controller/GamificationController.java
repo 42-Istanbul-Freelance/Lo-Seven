@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,5 +22,10 @@ public class GamificationController {
     public ResponseEntity<GamificationProfileDto> getProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(gamificationService.getGamificationProfile(userDetails.getId()));
+    }
+
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<GamificationProfileDto> getProfileById(@PathVariable Long id) {
+        return ResponseEntity.ok(gamificationService.getGamificationProfile(id));
     }
 }

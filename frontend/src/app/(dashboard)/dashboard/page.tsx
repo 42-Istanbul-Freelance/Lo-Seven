@@ -29,27 +29,61 @@ export default function DashboardPage() {
     const router = useRouter();
     const [activities, setActivities] = useState<ActivityType[]>([]);
     const [gamification, setGamification] = useState<GamificationProfile | null>(null);
+    const [pendingActivities, setPendingActivities] = useState<ActivityType[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
         if (!session?.accessToken) return;
         try {
-            const [actRes, gamRes] = await Promise.all([
+            const promises = [
                 fetch(`${getApiUrl()}/api/v1/activities/my`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` },
                 }),
                 fetch(`${getApiUrl()}/api/v1/gamification/profile`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` },
-                }),
-            ]);
+                })
+            ];
+
+            if (session.user?.role === "TEACHER" || session.user?.role === "PRINCIPAL") {
+                promises.push(
+                    fetch(`${getApiUrl()}/api/v1/activities/pending`, {
+                        headers: { "Authorization": `Bearer ${session.accessToken}` },
+                    })
+                );
+            }
+
+            const results = await Promise.all(promises);
+            const actRes = results[0];
+            const gamRes = results[1];
+            const pendRes = results[2];
+
             if (actRes.ok) setActivities(await actRes.json());
             if (gamRes.ok) setGamification(await gamRes.json());
+            if (pendRes && pendRes.ok) setPendingActivities(await pendRes.json());
+
         } catch (err) {
             console.error("Dashboard fetch error:", err);
         } finally {
             setLoading(false);
         }
-    }, [session?.accessToken]);
+    }, [session?.accessToken, session?.user?.role]);
+
+    const handleAction = async (activityId: number, action: 'approve' | 'reject') => {
+        if (!session?.accessToken) return;
+        try {
+            const res = await fetch(`${getApiUrl()}/api/v1/activities/${activityId}/${action}`, {
+                method: 'POST',
+                headers: { "Authorization": `Bearer ${session.accessToken}` },
+            });
+            if (res.ok) {
+                setPendingActivities(prev => prev.filter(a => a.id !== activityId));
+            } else {
+                alert(`İşlem başarısız oldu.`);
+            }
+        } catch (error) {
+            console.error("Action error:", error);
+        }
+    };
 
     useEffect(() => {
         if (status === "unauthenticated") router.push("/login");
@@ -70,7 +104,7 @@ export default function DashboardPage() {
     if (!session) return null;
 
     // Role redirects
-    if (session.user?.role === "PRINCIPAL" || session.user?.role === "HQ") {
+    if (session.user?.role === "HQ") {
         router.push("/dashboard/hq");
         return null;
     }
@@ -182,6 +216,35 @@ export default function DashboardPage() {
                                     <span className="text-[10px] text-zinc-400 shrink-0">
                                         {new Date(act.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
                                     </span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Pending Activities (For Teachers) */}
+                {(session.user?.role === "TEACHER" || session.user?.role === "PRINCIPAL") && pendingActivities.length > 0 && (
+                    <section>
+                        <h2 className="text-lg font-bold text-zinc-900 mb-4 px-1">Onay Bekleyen Öğrenci Talepleri</h2>
+                        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden divide-y divide-zinc-50">
+                            {pendingActivities.map((act) => (
+                                <div key={act.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-zinc-800 truncate">{act.title}</p>
+                                        <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{act.description}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">{act.hours} Saat</span>
+                                            <span className="text-[11px] text-zinc-400">{new Date(act.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button onClick={() => handleAction(act.id, 'reject')} className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-red-100">
+                                            Reddet
+                                        </button>
+                                        <button onClick={() => handleAction(act.id, 'approve')} className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-4 py-1.5 rounded-lg transition-colors shadow-sm">
+                                            Onayla
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

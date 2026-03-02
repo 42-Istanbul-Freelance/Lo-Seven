@@ -83,7 +83,7 @@ export function Header() {
                                         <div className="p-2 space-y-1">
                                             <Link href="/profile" className="block px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50 rounded-lg hover:text-zinc-900">Profilim</Link>
                                             <Link href="/settings" className="block px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50 rounded-lg hover:text-zinc-900">Ayarlar</Link>
-                                            <button onClick={() => signOut({ callbackUrl: "/login" })} className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium">Çıkış Yap</button>
+                                            <button onClick={(e) => { e.preventDefault(); signOut({ callbackUrl: "/login" }); }} className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg font-medium">Çıkış Yap</button>
                                         </div>
                                     </div>
                                 </div>

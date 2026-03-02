@@ -10,6 +10,14 @@ export default function SettingsPage() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
+    const [formData, setFormData] = useState({
+        name: session?.user?.name || "",
+        email: session?.user?.email || "",
+    });
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -28,7 +36,7 @@ export default function SettingsPage() {
             const formData = new FormData();
             formData.append("file", file);
 
-            const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081'}/api/v1/upload`, {
+            const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/v1/upload`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${session?.accessToken}`,
@@ -44,7 +52,7 @@ export default function SettingsPage() {
             const newImageUrl = uploadData.url;
 
             // 2. Update user profile
-            const updateRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081'}/api/v1/users/me/profile-picture`, {
+            const updateRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/v1/users/me/profile-picture`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -53,21 +61,42 @@ export default function SettingsPage() {
                 body: JSON.stringify({ profilePictureUrl: newImageUrl }),
             });
 
-            if (!updateRes.ok) {
+            if (updateRes.ok) {
+                await update({ image: newImageUrl });
+                setSuccess("Profil fotoğrafı başarıyla güncellendi.");
+                setError("");
+            } else {
                 throw new Error("Profil güncellenemedi");
             }
-
-            // 3. Update NextAuth session
-            await update({ image: newImageUrl });
-
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Profil fotoğrafı güncellenirken bir hata oluştu.");
+            setError("Profil fotoğrafı güncellenirken bir hata oluştu.");
+            setSuccess("");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setSuccess("");
+        setError("");
+
+        try {
+            await update({ name: formData.name });
+            setSuccess("Bilgileriniz başarıyla güncellendi.");
+        } catch (err) {
+            setError("Bilgiler güncellenirken hata oluştu.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -146,7 +175,7 @@ export default function SettingsPage() {
                             onChange={handleFileChange}
                             className="hidden"
                         />
-                        <button 
+                        <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
                             className="w-20 h-20 rounded-full bg-red-50 flex flex-col items-center justify-center text-2xl font-bold text-red-500 ring-4 ring-red-100/50 relative overflow-hidden group cursor-pointer disabled:opacity-50"
@@ -182,94 +211,47 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-12 w-full max-w-4xl px-4">
-
-                        {/* Connections Col */}
                         <div className="flex-1 space-y-6">
-                            <h3 className="text-lg font-bold text-zinc-900">Bağlantılar</h3>
+                            {error && (
+                                <div className="mb-6 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm">
+                                    {error}
+                                </div>
+                            )}
+                            {success && (
+                                <div className="mb-6 bg-green-50 border border-green-100 text-green-600 px-4 py-3 rounded-xl text-sm">
+                                    {success}
+                                </div>
+                            )}
 
-                            <div className="bg-[#f0f2f5] rounded-[24px] p-6 space-y-6">
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100" alt="Alex" className="w-10 h-10 rounded-full object-cover shadow-sm" />
-                                            <span className="font-bold text-sm text-zinc-900">Alex Johnson</span>
-                                        </div>
-                                        <span className="text-xs font-semibold text-zinc-500">gönüllü</span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100" alt="Maya" className="w-10 h-10 rounded-full object-cover shadow-sm" />
-                                            <span className="font-bold text-sm text-zinc-900">Maya Lee</span>
-                                        </div>
-                                        <span className="text-xs font-semibold text-zinc-500">lider</span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" alt="Jordan" className="w-10 h-10 rounded-full object-cover shadow-sm" />
-                                            <span className="font-bold text-sm text-zinc-900">Jordan Smith</span>
-                                        </div>
-                                        <span className="text-xs font-semibold text-zinc-500">destekçi</span>
+                            <form onSubmit={handleSubmit} className="bg-white rounded-[24px] border border-zinc-100 p-8 space-y-6 shadow-sm">
+                                <h3 className="text-lg font-bold text-zinc-900 mb-2">Genel Bilgiler</h3>
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium leading-6 text-zinc-700">Ad Soyad</label>
+                                    <div className="mt-1">
+                                        <input type="text" id="name" name="name" required value={formData.name || (session.user?.name || "")} onChange={handleChange}
+                                            className="block w-full rounded-xl border border-zinc-200 bg-[#fafafa] py-3 px-4 text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all sm:text-sm" />
                                     </div>
                                 </div>
 
-                                <div className="flex gap-2 pt-4 border-t border-zinc-200/50">
-                                    <input
-                                        type="email"
-                                        placeholder="Bağlanmak için e-posta girin"
-                                        className="flex-1 bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                                    />
-                                    <button className="bg-red-500 text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-red-600 transition-colors shadow-sm">
-                                        Ekle
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium leading-6 text-zinc-700">E-posta Adresi (Değiştirilemez)</label>
+                                    <div className="mt-1">
+                                        <input type="email" id="email" name="email" value={formData.email || (session.user?.email || "")} disabled
+                                            className="block w-full rounded-xl border border-zinc-200 bg-zinc-100 py-3 px-4 text-zinc-500 cursor-not-allowed sm:text-sm" />
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex justify-between items-center border-t border-zinc-100">
+                                    <button onClick={(e) => { e.preventDefault(); signOut({ callbackUrl: "/login" }); }} className="text-red-500 font-bold text-sm px-4 py-2 hover:bg-red-50 rounded-xl transition-colors">
+                                        Çıkış Yap
+                                    </button>
+                                    <button type="submit" disabled={isLoading}
+                                        className="px-6 flex justify-center rounded-xl bg-red-500 py-3 text-sm font-bold text-white shadow-sm hover:bg-red-600 transition-all disabled:opacity-50">
+                                        {isLoading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
                                     </button>
                                 </div>
-                            </div>
-
-                            <div className="bg-[#f0f2f5] rounded-[24px] p-6 flex items-center justify-between mt-8">
-                                <p className="text-sm font-semibold text-zinc-600">Toplulukta aktif kalın. Ayrılmak mı istiyorsunuz?</p>
-                                <button onClick={() => signOut({ callbackUrl: "/login" })} className="bg-red-500 text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-red-600 transition-colors shadow-sm shrink-0">
-                                    Çıkış Yap
-                                </button>
-                            </div>
+                            </form>
                         </div>
-
-                        {/* Options Col */}
-                        <div className="w-full md:w-80 shrink-0 space-y-10">
-
-                            {/* Volunteer Plan */}
-                            <section>
-                                <h3 className="text-lg font-bold text-zinc-900 mb-6">Gönüllü Planı</h3>
-                                <div className="bg-[#f0f2f5] rounded-[24px] p-6 space-y-4">
-                                    <p className="text-sm font-semibold text-zinc-600 leading-relaxed">
-                                        Aylık 50 saati takip edin. Daha fazlasına mı ihtiyacınız var?
-                                    </p>
-                                    <button className="bg-red-500 text-white font-bold text-sm px-8 py-3 rounded-[14px] hover:bg-red-600 transition-colors shadow-sm">
-                                        Yükselt
-                                    </button>
-                                </div>
-                            </section>
-
-                            {/* Privacy Options */}
-                            <section>
-                                <h3 className="text-lg font-bold text-zinc-900 mb-6">Gizlilik Seçenekleri</h3>
-                                <div className="bg-[#f0f2f5] rounded-[24px] p-6 space-y-6">
-                                    <p className="text-sm font-semibold text-zinc-600 leading-relaxed">
-                                        Gönderilerinizi kimlerin görebileceğini kontrol edin.
-                                    </p>
-                                    <div className="flex gap-4">
-                                        <button className="flex-1 bg-red-500 text-white font-bold text-sm py-3.5 rounded-[14px] shadow-md transition-all scale-100 hover:scale-[1.02]">
-                                            Herkese Açık
-                                        </button>
-                                        <button className="flex-1 bg-[#ff4d4d] text-white font-bold text-sm py-3.5 rounded-[14px] shadow-sm hover:bg-red-500 transition-colors opacity-90">
-                                            Gizli
-                                        </button>
-                                    </div>
-                                </div>
-                            </section>
-
-                        </div>
-
                     </div>
                 </div>
             </main>

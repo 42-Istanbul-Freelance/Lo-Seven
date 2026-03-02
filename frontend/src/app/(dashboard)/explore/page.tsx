@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 
@@ -14,32 +14,162 @@ type ActivityType = {
     mediaUrl: string | null;
     status: string;
     studentName: string;
+    studentId: number;
     createdAt: string;
+    eventDate: string;
+};
+
+type ParticipationType = {
+    id: number;
+    activityId: number;
+    status: string;
+    mediaUrl: string | null;
+    comment: string | null;
 };
 
 export default function ExplorePage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [activities, setActivities] = useState<ActivityType[]>([]);
+    const [participations, setParticipations] = useState<Record<number, ParticipationType>>({});
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchActivities = useCallback(async () => {
         if (!session?.accessToken) return;
         try {
-            const res = await fetch(`${getApiUrl()}/api/v1/activities/my`, {
-                headers: { "Authorization": `Bearer ${session.accessToken}` },
+            const [myActRes, schoolActRes, partRes] = await Promise.all([
+                fetch(`${getApiUrl()}/api/v1/activities/my`, {
+                    headers: { "Authorization": `Bearer ${session.accessToken}` },
+                }),
+                fetch(`${getApiUrl()}/api/v1/activities/school/approved`, {
+                    headers: { "Authorization": `Bearer ${session.accessToken}` },
+                }),
+                fetch(`${getApiUrl()}/api/v1/participations/my`, {
+                    headers: { "Authorization": `Bearer ${session.accessToken}` },
+                }),
+            ]);
+
+            const myAct = myActRes.ok ? await myActRes.json() : [];
+            const schoolAct = schoolActRes.ok ? await schoolActRes.json() : [];
+            const parts = partRes.ok ? await partRes.json() : [];
+
+            // Merge activities
+            const allMap = new Map();
+            myAct.forEach((a: ActivityType) => allMap.set(a.id, a));
+            schoolAct.forEach((a: ActivityType) => allMap.set(a.id, a));
+
+            const combined = Array.from(allMap.values()).sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setActivities(combined);
+
+            // Merge participations into map
+            const partsMap: Record<number, ParticipationType> = {};
+            parts.forEach((p: ParticipationType) => {
+                partsMap[p.activityId] = p;
             });
-            if (res.ok) {
-                const data = await res.json();
-                setActivities(data);
-            }
+            setParticipations(partsMap);
+
         } catch (err) {
-            console.error("Failed to fetch activities:", err);
+            console.error("Failed to fetch explore data:", err);
         } finally {
             setLoading(false);
         }
     }, [session?.accessToken]);
+
+    const handleRegister = async (activityId: number) => {
+        if (!session?.accessToken) return;
+        setActionLoading(true);
+        try {
+            const res = await fetch(`${getApiUrl()}/api/v1/participations`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${session.accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ activityId })
+            });
+            if (res.ok) {
+                const newPart = await res.json();
+                setParticipations(prev => ({ ...prev, [activityId]: newPart }));
+            } else {
+                alert("Kayıt işlemi başarısız.");
+            }
+        } catch (error) {
+            console.error("Register error:", error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleComplete = async (participationId: number, mediaUrl: string) => {
+        if (!session?.accessToken) return;
+        setActionLoading(true);
+        try {
+            const res = await fetch(`${getApiUrl()}/api/v1/participations/${participationId}/complete`, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${session.accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ mediaUrl, comment: "Harikaydı!" })
+            });
+            if (res.ok) {
+                const updatedPart = await res.json();
+                setParticipations(prev => ({ ...prev, [updatedPart.activityId]: updatedPart }));
+                alert("Tebrikler! XP ve puan kazandınız.");
+            } else {
+                alert("Tamamlama işlemi başarısız.");
+            }
+        } catch (error) {
+            console.error("Complete error:", error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleFileUploadRequest = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, participationId: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setActionLoading(true);
+        try {
+            // Upload the file to the backend
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const uploadRes = await fetch(`${getApiUrl()}/api/v1/upload`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${session?.accessToken}`,
+                },
+                body: formData,
+            });
+
+            if (!uploadRes.ok) {
+                alert("Fotoğraf yüklenemedi. Lütfen tekrar deneyin.");
+                return;
+            }
+
+            const uploadData = await uploadRes.json();
+            const realMediaUrl = uploadData.url;
+
+            // Complete the participation with the real uploaded image URL
+            await handleComplete(participationId, realMediaUrl);
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Fotoğraf yüklenirken bir hata oluştu.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (status === "unauthenticated") router.push("/login");
@@ -101,9 +231,9 @@ export default function ExplorePage() {
                     {/* Impact List */}
                     <div className="w-full md:w-[45%] border-r border-zinc-100 p-8 flex flex-col">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Your Impact</h2>
+                            <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Senin Etkin</h2>
                             <Link href="/dashboard/activities/new" className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white transition-colors px-4 py-2 rounded-xl text-sm font-bold shadow-sm">
-                                + Add
+                                + Ekle
                             </Link>
                         </div>
 
@@ -160,7 +290,7 @@ export default function ExplorePage() {
                                     <img
                                         src={selectedActivity.mediaUrl || defaultImages[selectedIndex % defaultImages.length]}
                                         alt={selectedActivity.title}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-opacity duration-300"
                                     />
                                 </div>
 
@@ -192,13 +322,52 @@ export default function ExplorePage() {
                                     </p>
                                 </div>
 
-                                <div className="flex gap-4 mt-8 pt-6 border-t border-zinc-200/50">
-                                    <Link href="/dashboard/activities/new" className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center">
-                                        Yeni Etkinlik Ekle
-                                    </Link>
-                                    <Link href="/gamified" className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center">
-                                        Başarıları Gör
-                                    </Link>
+                                <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-zinc-200/50">
+                                    {selectedActivity.status === "APPROVED" && (
+                                        <>
+                                            {!participations[selectedActivity.id] ? (
+                                                <button
+                                                    onClick={() => handleRegister(selectedActivity.id)}
+                                                    disabled={actionLoading}
+                                                    className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center disabled:opacity-50"
+                                                >
+                                                    {actionLoading ? "İşleniyor..." : "Bu Etkinliğe Katıl / Kaydol"}
+                                                </button>
+                                            ) : participations[selectedActivity.id].status === "REGISTERED" ? (
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="bg-yellow-50 text-yellow-700 p-3 rounded-xl text-xs font-semibold text-center border border-yellow-100">
+                                                        Bu etkinliğe kayıtlısın. Katıldıktan sonra fotoğraf yükleyerek tamamla!
+                                                    </div>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        onChange={(e) => handleFileChange(e, participations[selectedActivity.id].id)}
+                                                    />
+                                                    <button
+                                                        onClick={handleFileUploadRequest}
+                                                        disabled={actionLoading}
+                                                        className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center disabled:opacity-50 flex items-center justify-center gap-2"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                        {actionLoading ? "Yükleniyor..." : "Ben de Oradaydım (Fotoğraf Yükle)"}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="w-full bg-green-50 border border-green-200 text-green-700 font-bold py-3 rounded-xl shadow-sm text-sm text-center flex items-center justify-center gap-2">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                    Katılım Tamamlandı ✓
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    <div className="flex gap-4 w-full mt-2">
+                                        <Link href="/dashboard/activities/new" className="flex-1 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-bold py-3 rounded-xl transition-colors shadow-sm text-sm text-center">
+                                            Yeni Etkinlik Ekle
+                                        </Link>
+                                    </div>
                                 </div>
                             </>
                         ) : (

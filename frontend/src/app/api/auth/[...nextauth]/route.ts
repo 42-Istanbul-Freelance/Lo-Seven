@@ -15,7 +15,7 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8081'}/api/v1/auth/login`, {
+                    const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8080'}/api/v1/auth/login`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

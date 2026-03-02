@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,20 +10,9 @@ interface SchoolStats {
     schoolId: number;
     schoolName: string;
     studentCount: number;
+    teacherCount: number;
     totalApprovedHours: number;
     totalPoints: number;
-}
-
-interface HqStats {
-    totalUsers: number;
-    totalStudents: number;
-    totalTeachers: number;
-    totalSchools: number;
-    totalActivities: number;
-    approvedActivities: number;
-    pendingActivities: number;
-    totalPosts: number;
-    schoolLeaderboard: SchoolStats[];
 }
 
 interface Activity {
@@ -40,8 +29,7 @@ interface Activity {
 
 export default function HqDashboardPage() {
     const { data: session, status } = useSession();
-    const [stats, setStats] = useState<HqStats | null>(null);
-    const [pendingActivities, setPendingActivities] = useState<Activity[]>([]);
+    const [schools, setSchools] = useState<SchoolStats[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -50,18 +38,11 @@ export default function HqDashboardPage() {
         const fetchDashboardData = async () => {
             if (!session?.accessToken) return;
             try {
-                const statsRes = await fetch(`${getApiUrl()}/api/v1/reports/stats`, {
+                const res = await fetch(`${getApiUrl()}/api/v1/hq/schools-stats`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` }
                 });
-                if (statsRes.ok) setStats(await statsRes.json());
-                else setError("API Hatası (Stats)");
-
-                const activitiesRes = await fetch(`${getApiUrl()}/api/v1/activities/pending`, {
-                    headers: { "Authorization": `Bearer ${session.accessToken}` }
-                });
-                if (activitiesRes.ok) {
-                    setPendingActivities(await activitiesRes.json());
-                }
+                if (res.ok) setSchools(await res.json());
+                else setError("Yetkisiz Erişim veya API Hatası");
             } catch (e) { setError("Bağlantı hatası oluştu."); }
             finally { setIsLoading(false); }
         };
@@ -70,29 +51,8 @@ export default function HqDashboardPage() {
         else if (status === "unauthenticated") { setIsLoading(false); setError("Giriş yapmanız gerekiyor."); }
     }, [session, status]);
 
-    const handleApprove = async (id: number) => {
-        try {
-            const res = await fetch(`${getApiUrl()}/api/v1/activities/${id}/approve`, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${session?.accessToken}` }
-            });
-            if (res.ok) setPendingActivities(pendingActivities.filter(a => a.id !== id));
-        } catch (e) { console.error(e); }
-    };
-
-    const handleReject = async (id: number) => {
-        try {
-            const res = await fetch(`${getApiUrl()}/api/v1/activities/${id}/reject`, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${session?.accessToken}` }
-            });
-            if (res.ok) setPendingActivities(pendingActivities.filter(a => a.id !== id));
-        } catch (e) { console.error(e); }
-    };
-
-    const filteredActivities = pendingActivities.filter(a =>
-        a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredSchools = schools.filter(s =>
+        s.schoolName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (isLoading || status === "loading") {
@@ -109,13 +69,13 @@ export default function HqDashboardPage() {
         </div>;
     }
 
-    if (!stats) return null;
+    if (!schools) return null;
 
     const kpiCards = [
-        { label: "Toplam Saat", value: stats.schoolLeaderboard.reduce((acc, curr) => acc + curr.totalApprovedHours, 0) + "h" },
-        { label: "Aktif Öğrenciler", value: stats.totalStudents },
-        { label: "Bekleyen Onay", value: Math.max(stats.pendingActivities, pendingActivities.length) },
-        { label: "Okullar", value: stats.totalSchools }
+        { label: "Toplam Okul", value: schools.length },
+        { label: "Toplam Öğrenci", value: schools.reduce((acc, curr) => acc + curr.studentCount, 0) },
+        { label: "Toplam Öğretmen", value: schools.reduce((acc, curr) => acc + curr.teacherCount, 0) },
+        { label: "Onaylı Aktif Saat", value: schools.reduce((acc, curr) => acc + curr.totalApprovedHours, 0) + "h" }
     ];
 
     return (
@@ -154,12 +114,7 @@ export default function HqDashboardPage() {
                         <svg className="w-5 h-5 group-hover:text-zinc-800 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="group-hover:text-zinc-800 transition-colors">Onaylamalar</span>
-                        {pendingActivities.length > 0 && (
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                                {pendingActivities.length}
-                            </span>
-                        )}
+                        <span className="group-hover:text-zinc-800 transition-colors">Raporlar</span>
                     </a>
                     <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-zinc-500 hover:bg-white hover:shadow-sm transition-all group">
                         <svg className="w-5 h-5 group-hover:text-zinc-800 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +132,7 @@ export default function HqDashboardPage() {
                         </div>
                         <div className="overflow-hidden">
                             <p className="text-sm font-semibold text-zinc-900 truncate">{session?.user?.name}</p>
-                            <Link href="/api/auth/signout" className="text-xs text-zinc-400 hover:text-red-500 transition-colors block">Çıkış Yap</Link>
+                            <button onClick={(e) => { e.preventDefault(); signOut({ callbackUrl: "/login" }); }} className="text-xs text-zinc-400 hover:text-red-500 transition-colors block text-left">Çıkış Yap</button>
                         </div>
                     </div>
                 </div>
@@ -208,9 +163,6 @@ export default function HqDashboardPage() {
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            {pendingActivities.length > 0 && (
-                                <span className="absolute top-2.5 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-                            )}
                         </button>
                     </div>
                 </header>
@@ -232,68 +184,60 @@ export default function HqDashboardPage() {
                         {/* Two Column Layout */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-                            {/* Data Table: Pending Approvals (Spans 2 columns) */}
                             <div className="xl:col-span-2 bg-white border border-zinc-100 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col overflow-hidden">
                                 <div className="px-6 py-5 border-b border-zinc-100 flex justify-between items-center">
-                                    <h3 className="text-base font-bold text-zinc-900">Bekleyen Onaylar</h3>
-                                    <span className="bg-red-50 text-red-600 py-1 px-3 rounded-md text-xs font-semibold">{pendingActivities.length} İstek</span>
+                                    <h3 className="text-base font-bold text-zinc-900">Merkez Okul Raporları</h3>
+                                    <span className="bg-red-50 text-red-600 py-1 px-3 rounded-md text-xs font-semibold">{filteredSchools.length} Okul</span>
                                 </div>
                                 <div className="flex-1 overflow-auto">
-                                    {filteredActivities.length === 0 ? (
+                                    {filteredSchools.length === 0 ? (
                                         <div className="p-10 text-center text-zinc-500 text-sm">
-                                            Bekleyen onay işlemi bulunmamaktadır. Harika!
+                                            Kayıtlı okul bulunamadı.
                                         </div>
                                     ) : (
                                         <table className="min-w-full">
                                             <thead className="bg-[#fafafa] border-b border-zinc-100">
                                                 <tr>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Görsel</th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Öğrenci & Aktivite</th>
-                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Detaylar</th>
-                                                    <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-zinc-500 uppercase">Aksiyon</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Okul Bilgisi</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Mevcut (Öğt / Öğr)</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-zinc-500 uppercase">Aktif Saat</th>
+                                                    <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-zinc-500 uppercase">Toplam Puan</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-zinc-50">
-                                                {filteredActivities.map((activity) => (
-                                                    <tr key={activity.id} className="hover:bg-zinc-50/50 transition-colors">
+                                                {filteredSchools.map((school) => (
+                                                    <tr key={school.schoolId} className="hover:bg-zinc-50/50 transition-colors">
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {activity.mediaUrl ? (
-                                                                <img src={activity.mediaUrl} alt="Aktivite" className="w-12 h-12 object-cover rounded-lg border border-zinc-200" />
-                                                            ) : (
-                                                                <div className="w-12 h-12 bg-zinc-100 rounded-lg flex items-center justify-center text-zinc-400 border border-zinc-200">
-                                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L28 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                    </svg>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-bold">
+                                                                    O
                                                                 </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex flex-col">
-                                                                <span className="font-bold text-zinc-900 text-sm mb-0.5">{activity.title}</span>
-                                                                <span className="text-xs text-zinc-500 line-clamp-1">{activity.description}</span>
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-zinc-900 text-sm mb-0.5">{school.schoolName}</span>
+                                                                    <span className="text-xs text-indigo-500">ID: #{school.schoolId}</span>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex flex-col">
-                                                                <span className="text-sm text-zinc-700 font-medium">{activity.hours} Saat</span>
-                                                                <span className="text-xs text-zinc-400">{new Date(activity.createdAt).toLocaleDateString("tr-TR")}</span>
+                                                            <div className="flex gap-4">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm text-zinc-700 font-bold">{school.teacherCount}</span>
+                                                                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest">ÖĞRETMEN</span>
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm text-zinc-700 font-bold">{school.studentCount}</span>
+                                                                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest">ÖĞRENCİ</span>
+                                                                </div>
                                                             </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
+                                                                <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>
+                                                                {school.totalApprovedHours} Saat
+                                                            </span>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                <button
-                                                                    onClick={() => handleApprove(activity.id)}
-                                                                    className="px-3 py-1.5 border border-red-500 text-red-500 text-xs font-bold rounded-lg hover:bg-red-500 hover:text-white transition-colors"
-                                                                >
-                                                                    Onayla
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleReject(activity.id)}
-                                                                    className="px-3 py-1.5 border border-zinc-200 text-zinc-500 text-xs font-bold rounded-lg hover:bg-zinc-100 hover:text-zinc-800 transition-colors"
-                                                                >
-                                                                    Reddet
-                                                                </button>
-                                                            </div>
+                                                            <span className="text-sm font-bold text-amber-500">{school.totalPoints} XP</span>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -309,11 +253,11 @@ export default function HqDashboardPage() {
                                     <h3 className="text-base font-bold text-zinc-900">Okul Sıralaması</h3>
                                 </div>
                                 <div className="p-6 flex-1 overflow-auto">
-                                    {stats.schoolLeaderboard.length === 0 ? (
+                                    {schools.length === 0 ? (
                                         <p className="text-sm text-zinc-500 text-center py-4">Sıralama verisi yok.</p>
                                     ) : (
                                         <ul className="space-y-5">
-                                            {stats.schoolLeaderboard.slice(0, 5).map((school, idx) => (
+                                            {[...schools].sort((a, b) => b.totalApprovedHours - a.totalApprovedHours).slice(0, 5).map((school, idx) => (
                                                 <li key={school.schoolId} className="flex items-center justify-between group">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border ${idx === 0 ? 'bg-amber-50 border-amber-200 text-amber-600' :

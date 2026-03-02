@@ -12,7 +12,6 @@ public class RegisterRequest {
     @NotBlank
     private String firstName;
 
-    @NotBlank
     private String lastName;
 
     @NotBlank
@@ -26,4 +25,8 @@ public class RegisterRequest {
     private Role role;
 
     private Long schoolId;
+
+    // For PRINCIPAL registration – creates a new school
+    private String schoolName;
+    private String schoolType;
 }
